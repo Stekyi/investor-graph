@@ -1,7 +1,7 @@
 import streamlit as st
 import layout
 import datetime
-from IPython.display import Image, display
+#from IPython.display import Image, display
 
 st.set_page_config(layout="wide")
 
