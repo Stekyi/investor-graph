@@ -1,0 +1,11 @@
+[project]
+name = "investor-graph"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "langgraph>=0.6.8",
+    "python-dotenv>=1.1.1",
+    "streamlit>=1.50.0",
+]
