@@ -58,11 +58,12 @@ st.divider()
 q_col, ans_col = st.columns(2)
 
 with result_container:
-    data_col, bs_col = st.columns([2, 4])
+    data_col, bs_col = st.columns([1, 4])
     with bs_col:
         bs_placeholder = st.empty()
 
     with data_col:
+        st.markdown('*** Scroll up to read your Business Case ***')
         for key, val in object_update.items():
             if key != 'business_case':
                 with q_col:
