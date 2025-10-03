@@ -12,6 +12,8 @@ try:
     HUGGINGFACE_API_TOKEN = os.getenv('HUGGINGFACE_API_TOKEN')
 except Exception as e:
     HUGGINGFACE_API_TOKEN = st.secrets["HUGGINGFACE_API_TOKEN"]
+    os.environ["FIREWORKS_API_KEY"] = st.secrets["FIREWORKS_API_KEY"]
+    os.environ["HUGGINGFACE_API_TOKEN"] = st.secrets["HUGGINGFACE_API_TOKEN"]
 
 
 class Person(TypedDict, total=False):
