@@ -21,80 +21,88 @@ class Person(TypedDict, total=False):
     business_name : str
     business_case: str
 
-def checkAge(state: Person) -> Person:
-    state['age'] = (datetime.today() - state['dob']).days // 365
-    return state
+class Investment:
+    def __init__(self):
+        pass
 
-def conditionCapital(state: Person) -> str:
-    if state['capital'] > 100000:
-        return 'High'
-    else:
-        return 'Low'
+    def checkAge(self, state: Person) -> Person:
+        state['age'] = (datetime.today().date() - state['dob']).days // 365
+        return state
 
-def getHighInvestmentScale(state: Person) -> Person:
-    state['scale_business'] = 'High'
-    return state
+    def conditionCapital(self, state: Person) -> str:
+        if state['capital'] > 100000:
+            return 'High'
+        else:
+            return 'Low'
 
-def getLowInvestmentScale(state: Person) -> Person:
-    state['scale_business'] = 'Low'
-    return state
+    def getHighInvestmentScale(self, state: Person) -> Person:
+        state['scale_business'] = 'High'
+        return state
 
-def conditionService(state: Person) -> str:
-    return state['interest']
+    def getLowInvestmentScale(self, state: Person) -> Person:
+        state['scale_business'] = 'Low'
+        return state
 
-def getServiceBusinessName(state: Person) -> Person:
-    state['business_name'] = 'Pilas Services'
-    return state
+    def conditionService(self, state: Person) -> str:
+        return state['interest']
 
-def getManufacturingBusinessName(state: Person) -> Person:
-    state['business_name'] = 'Pilas Manufacturing'
-    return state
+    def getServiceBusinessName(self, state: Person) -> Person:
+        state['business_name'] = 'Pilas Services'
+        return state
 
-def getBusinessCase(state: Person) -> Person:
-    llm = HuggingFaceEndpoint(repo_id='deepseek-ai/DeepSeek-R1', temperature=0.3,
-                              task='text-generation', verbose=False)
+    def getManufacturingBusinessName(self, state: Person) -> Person:
+        state['business_name'] = 'Pilas Manufacturing'
+        return state
 
-    chat_model = ChatHuggingFace(llm=llm)
+    def getBusinessCase(self, state: Person) -> Person:
+        llm = HuggingFaceEndpoint(repo_id='deepseek-ai/DeepSeek-R1', temperature=0.3,
+                                  task='text-generation', verbose=False)
 
-    template = '''Hi, my name is {name}, and i am {age} old, i want to start a {scale} business in {country} 
-                    with a capital of {capital} in the {interest} industry. in a simple step, give me a business case
-                    for this business. Make it a very short business case.                
-                '''
-    prompt = PromptTemplate(input_variables=['name', 'age', 'scale', 'country', 'capital', 'interest'], template=template)
+        chat_model = ChatHuggingFace(llm=llm)
 
-    chain = prompt | chat_model
+        template = '''Hi, my name is {name}, and i am {age} old, i want to start a {scale} business in {country} 
+                        with a capital of {capital} in the {interest} industry. in a simple step, give me a business case
+                        for this business. Make it a very short business case.                
+                    '''
+        prompt = PromptTemplate(input_variables=['name', 'age', 'scale', 'country', 'capital', 'interest'], template=template)
 
-    response = chain.invoke({'name': state['name'], 'age': state['age'], 'scale': state['scale_business'],
-                             'country': state['country'], 'capital': state['capital'],
-                             'interest': state['interest']})
-    state['business_case'] = response.content
-    return state
+        chain = prompt | chat_model
+
+        response = chain.invoke({'name': state['name'], 'age': state['age'], 'scale': state['scale_business'],
+                                 'country': state['country'], 'capital': state['capital'],
+                                 'interest': state['interest']})
+        state['business_case'] = response.content
+        return state
+
+    def make_builder(self):
+        builder = StateGraph(Person)
+
+        builder.add_node('check_age', self.checkAge)
+        builder.add_node('get_high_scale', self.getHighInvestmentScale)
+        builder.add_node('get_low_scale', self.getLowInvestmentScale)
+        builder.add_node('get_service_bn', self.getServiceBusinessName)
+        builder.add_node('get_manufacturing_bn', self.getManufacturingBusinessName)
+        builder.add_node('get_business_case', self.getBusinessCase)
 
 
-builder = StateGraph(Person)
+        builder.add_edge(START, 'check_age')
+        builder.add_conditional_edges('check_age', self.conditionCapital, {'High': 'get_high_scale', 'Low': 'get_low_scale'})
+        builder.add_conditional_edges('get_high_scale', self.conditionService, {'Service': 'get_service_bn', 'Manufacturing': 'get_manufacturing_bn' } )
+        builder.add_conditional_edges('get_low_scale', self.conditionService, {'Service': 'get_service_bn', 'Manufacturing': 'get_manufacturing_bn' } )
+        builder.add_edge('get_service_bn', 'get_business_case' )
+        builder.add_edge('get_manufacturing_bn', 'get_business_case' )
 
-builder.add_node('check_age', checkAge)
-builder.add_node('get_high_scale', getHighInvestmentScale)
-builder.add_node('get_low_scale', getLowInvestmentScale)
-builder.add_node('get_service_bn', getServiceBusinessName)
-builder.add_node('get_manufacturing_bn', getManufacturingBusinessName)
-builder.add_node('get_business_case', getBusinessCase)
+        builder.add_edge('get_business_case', END)
 
+        graph = builder.compile()
 
-builder.add_edge(START, 'check_age')
-builder.add_conditional_edges('check_age', conditionCapital, {'High': 'get_high_scale', 'Low': 'get_low_scale'})
-builder.add_conditional_edges('get_high_scale', conditionService, {'Service': 'get_service_bn', 'Manufacturing': 'get_manufacturing_bn' } )
-builder.add_conditional_edges('get_low_scale', conditionService, {'Service': 'get_service_bn', 'Manufacturing': 'get_manufacturing_bn' } )
-builder.add_edge('get_service_bn', 'get_business_case' )
-builder.add_edge('get_manufacturing_bn', 'get_business_case' )
-
-builder.add_edge('get_business_case', END)
-
-graph = builder.compile()
+        return graph
 
 
 
 if __name__ == '__main__':
+    myInvestment = Investment()
+    graph = myInvestment.make_builder()
     object_update = graph.invoke({'name': 'samuel', 'dob' : datetime.strptime('21-may-1989', "%d-%b-%Y"), 'capital':2300, 'country':'Ghana', 'interest': 'Service'})
     print(object_update)
     print(graph.get_graph().draw_ascii())
