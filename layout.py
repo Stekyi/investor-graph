@@ -62,7 +62,8 @@ class Investment:
 
     def getBusinessCase(self, state: Person) -> Person:
         llm = HuggingFaceEndpoint(repo_id='deepseek-ai/DeepSeek-R1', temperature=0.3,
-                                  task='text-generation', verbose=False)
+                                  task='text-generation', verbose=False,
+        huggingfacehub_api_token = HUGGINGFACE_API_TOKEN )
 
         chat_model = ChatHuggingFace(llm=llm)
 
