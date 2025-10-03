@@ -5,10 +5,14 @@ from langchain_huggingface import HuggingFaceEndpoint, ChatHuggingFace
 from langchain_core.prompts import PromptTemplate
 from dotenv import load_dotenv
 import os
+import streamlit as st
 
+try:
+    load_dotenv('HUGGINGFACE_API_TOKEN')
+    HUGGINGFACE_API_TOKEN = os.getenv('HUGGINGFACE_API_TOKEN')
+except Exception as e:
+    HUGGINGFACE_API_TOKEN = st.secrets["HUGGINGFACE_API_TOKEN"]
 
-load_dotenv('HUGGINGFACE_API_TOKEN')
-HUGGINGFACE_API_TOKEN = os.getenv('HUGGINGFACE_API_TOKEN')
 
 class Person(TypedDict, total=False):
     name: str
