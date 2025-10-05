@@ -59,11 +59,8 @@ q_col, ans_col = st.columns(2)
 
 with result_container:
     data_col, bs_col = st.columns([1, 4])
-    with bs_col:
-        bs_placeholder = st.empty()
 
     with data_col:
-        st.markdown('*** Scroll up to read your Business Case ***')
         for key, val in object_update.items():
             if key != 'business_case':
                 with q_col:
@@ -71,7 +68,8 @@ with result_container:
                 with ans_col:
                     st.write(val)
             else:
-                bs_placeholder.subheader('Business Case')
-                bs_placeholder.write(object_update['business_case'])
+                with bs_col:
+                    st.subheader('Business Case')
+                    st.write(object_update['business_case'])
 
 

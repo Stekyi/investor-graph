@@ -1,20 +1,12 @@
 from langgraph.graph import StateGraph, START, END
 from typing import TypedDict, Literal
 from datetime import date, datetime
-from langchain_huggingface import HuggingFaceEndpoint, ChatHuggingFace
+
 from langchain_core.prompts import PromptTemplate
-from dotenv import load_dotenv
-import os
-import streamlit as st
+import lc_firework
+import lc_huggface
 
-try:
-    load_dotenv('HUGGINGFACE_API_TOKEN')
-    HUGGINGFACE_API_TOKEN = os.getenv('HUGGINGFACE_API_TOKEN')
-except Exception as e:
-    HUGGINGFACE_API_TOKEN = st.secrets["HUGGINGFACE_API_TOKEN"]
-    os.environ["FIREWORKS_API_KEY"] = st.secrets["FIREWORKS_API_KEY"]
-    os.environ["HUGGINGFACE_API_TOKEN"] = st.secrets["HUGGINGFACE_API_TOKEN"]
-
+api_parameter = 'F'
 
 class Person(TypedDict, total=False):
     name: str
@@ -61,11 +53,11 @@ class Investment:
         return state
 
     def getBusinessCase(self, state: Person) -> Person:
-        llm = HuggingFaceEndpoint(repo_id='deepseek-ai/DeepSeek-R1', temperature=0.3,
-                                  task='text-generation', verbose=False,
-        huggingfacehub_api_token = HUGGINGFACE_API_TOKEN )
+        if api_parameter != 'F':
 
-        chat_model = ChatHuggingFace(llm=llm)
+           chat_model = lc_huggface.get_chatModel()
+        else:
+            chat_model = lc_firework.get_chatModel()
 
         template = '''Hi, my name is {name}, and i am {age} old, i want to start a {scale} business in {country} 
                         with a capital of {capital} in the {interest} industry. in a simple step, give me a business case
